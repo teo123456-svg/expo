@@ -1,4 +1,92 @@
----
+---# ==== SERVER: sentiment_api.py ====
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.route('/sentiment')
+def sentiment():
+    # Example logic: real API or model call here
+    return jsonify({"sentiment": "bullish", "confidence": 0.81})
+
+if __name__ == '__main__':
+    app.run(port=5001)
+
+# ==== SERVER: news_api.py ====
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.route('/news')
+def news():
+    return jsonify({"event": "NFP", "impact": "high", "time": "13:30"})
+
+if __name__ == '__main__':
+    app.run(port=5002)
+
+# ==== SERVER: ml_model_api.py ====
+from flask import Flask, jsonify
+app = Flask(__name__)
+
+@app.route('/predict')
+def predict():
+    return jsonify({"direction": "buy", "confidence": 0.93})
+
+if __name__ == '__main__':
+    app.run(port=5003)
+
+# ==== SERVER: data_feed_api.py ====
+from flask import Flask, jsonify
+import random
+app = Flask(__name__)
+
+@app.route('/live')
+def live():
+    return jsonify({"volatility": random.uniform(0.5, 2.0), "spread": random.randint(1, 5)})
+
+if __name__ == '__main__':
+    app.run(port=5004)
+
+# ==== SERVER: alert_server.py ====
+from flask import Flask, request
+import requests
+
+app = Flask(__name__)
+TELEGRAM_TOKEN = "your_bot_token"
+CHAT_ID = "your_chat_id"
+
+@app.route('/alert', methods=['POST'])
+def alert():
+    data = request.json
+    message = data.get("message", "No message")
+    requests.get(f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}")
+    return "Alert sent"
+
+if __name__ == '__main__':
+    app.run(port=5005)
+
+# ==== MT5 EA: bot_ea.mq5 (Summary Snippet) ====
+input string SENTIMENT_URL = "http://localhost:5001/sentiment";
+input string NEWS_URL = "http://localhost:5002/news";
+input string ML_URL = "http://localhost:5003/predict";
+input string DATA_URL = "http://localhost:5004/live";
+input string ALERT_URL = "http://localhost:5005/alert";
+
+string GetJSON(string url)
+{
+   char post[];
+   char result[];
+   int timeout = 3000;
+   int res = WebRequest("GET", url, NULL, timeout, post, 0, result, NULL);
+   if(res == -1) Print("WebRequest error: ", GetLastError());
+   return CharArrayToString(result);
+}
+
+void OnTick()
+{
+   string sentiment = GetJSON(SENTIMENT_URL);
+   string news = GetJSON(NEWS_URL);
+   string prediction = GetJSON(ML_URL);
+   string live_data = GetJSON(DATA_URL);
+
+   // Parse responses & use logic to trigger Buy
 title: Start developing
 description: Make your first change to an Expo project and see it live on your device.
 hideTOC: true
